@@ -12,6 +12,21 @@
 		android:contentDescription="@string/descr_image"
 		android:scaleType="centerCrop" />
 
+	<ImageView
+		android:id="@+id/tick"
+
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:visibility="invisible"
+		android:adjustViewBounds="true"
+		android:maxWidth="24dip"
+		android:maxHeight="24dip"
+		android:layout_above="@+id/progress"
+		android:layout_gravity="right|bottom"
+		android:src="@drawable/ic_tick_green_circle_white"
+		/>
+
+
 	<TextView
 		android:id="@+id/text"
 		android:layout_width="fill_parent"

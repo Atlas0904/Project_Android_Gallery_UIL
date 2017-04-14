@@ -17,7 +17,9 @@ package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,12 +37,17 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 
+import java.util.Random;
+
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public class ImageGridFragment extends AbsListViewBaseFragment {
 
+	private static final String TAG =  ImageAdapter.class.getSimpleName();
 	public static final int INDEX = 1;
+
+
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,7 +57,16 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				startImagePagerActivity(position);
+				Log.d(TAG, "onItemLongClick pos=" + position + " id=" + id + " view=" + view);
+				onPressEventHandler(view, position);
+			}
+		});
+		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+				Log.d(TAG, "onItemLongClick pos=" + position + " id=" + id + " view=" + view);
+				onLongPressEventHandler(view, position);
+				return true;
 			}
 		});
 		return rootView;
@@ -68,9 +84,9 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 			inflater = LayoutInflater.from(context);
 
 			options = new DisplayImageOptions.Builder()
-					.showImageOnLoading(R.drawable.ic_stub)
-					.showImageForEmptyUri(R.drawable.ic_empty)
-					.showImageOnFail(R.drawable.ic_error)
+//					.showImageOnLoading(R.drawable.ic_stub)
+//					.showImageForEmptyUri(R.drawable.ic_empty)
+//					.showImageOnFail(R.drawable.ic_error)
 					.cacheInMemory(true)
 					.cacheOnDisk(true)
 					.considerExifParams(true)
@@ -102,6 +118,7 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 				holder = new ViewHolder();
 				assert view != null;
 				holder.imageView = (ImageView) view.findViewById(R.id.image);
+				holder.icon = (ImageView) view.findViewById(R.id.tick);
 				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
 				view.setTag(holder);
 			} else {
@@ -112,6 +129,7 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 					.displayImage(IMAGE_URLS[position], holder.imageView, options, new SimpleImageLoadingListener() {
 						@Override
 						public void onLoadingStarted(String imageUri, View view) {
+							holder.imageView.setBackgroundColor(Color.argb(128, random(), random(), random()));
 							holder.progressBar.setProgress(0);
 							holder.progressBar.setVisibility(View.VISIBLE);
 						}
@@ -134,10 +152,21 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 
 			return view;
 		}
+
+	}
+
+	private static int random() {
+		int max = 255;
+		int min = 0;
+		Random random = new Random();
+		return random.nextInt(max - min + 1) + min;
 	}
 
 	static class ViewHolder {
 		ImageView imageView;
+		ImageView icon;
 		ProgressBar progressBar;
 	}
+
+
 }

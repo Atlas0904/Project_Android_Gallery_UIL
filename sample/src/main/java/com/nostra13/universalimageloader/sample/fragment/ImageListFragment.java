@@ -54,10 +54,18 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 		View rootView = inflater.inflate(R.layout.fr_image_list, container, false);
 		listView = (ListView) rootView.findViewById(android.R.id.list);
 		((ListView) listView).setAdapter(new ImageAdapter(getActivity()));
+
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				startImagePagerActivity(position);
+				onPressEventHandler(view, position);
+			}
+		});
+		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+				onLongPressEventHandler(view, position);
+				return true;
 			}
 		});
 		return rootView;
@@ -116,6 +124,7 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 				holder = new ViewHolder();
 				holder.text = (TextView) view.findViewById(R.id.text);
 				holder.image = (ImageView) view.findViewById(R.id.image);
+				holder.icon = (ImageView) view.findViewById(R.id.tick);
 				view.setTag(holder);
 			} else {
 				holder = (ViewHolder) view.getTag();
@@ -132,6 +141,7 @@ public class ImageListFragment extends AbsListViewBaseFragment {
 	static class ViewHolder {
 		TextView text;
 		ImageView image;
+		ImageView icon;
 	}
 
 	private static class AnimateFirstDisplayListener extends SimpleImageLoadingListener {

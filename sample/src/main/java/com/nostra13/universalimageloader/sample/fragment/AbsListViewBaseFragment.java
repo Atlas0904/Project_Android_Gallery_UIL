@@ -16,27 +16,47 @@
 package com.nostra13.universalimageloader.sample.fragment;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AbsListView;
+import android.widget.ImageView;
+
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import com.nostra13.universalimageloader.sample.Constants;
 import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.activity.SimpleImageActivity;
 
+import java.util.ArrayList;
+
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  */
 public abstract class AbsListViewBaseFragment extends BaseFragment {
 
+    public static final int alpha_select_image = 100;
+    private static final String TAG = AbsListViewBaseFragment.class.getSimpleName();
+
 	protected static final String STATE_PAUSE_ON_SCROLL = "STATE_PAUSE_ON_SCROLL";
 	protected static final String STATE_PAUSE_ON_FLING = "STATE_PAUSE_ON_FLING";
+
+    public enum Modes {
+        DISPLAY,
+        EDIT
+    }
 
 	protected AbsListView listView;
 
 	protected boolean pauseOnScroll = false;
 	protected boolean pauseOnFling = true;
+
+	protected Modes mode = Modes.DISPLAY;
+	protected ArrayList<View> selectViewList;
+
+    public static boolean[] selected_image = new boolean[Constants.IMAGES.length];
 
 	@Override
 	public void onResume() {
@@ -79,6 +99,66 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 		intent.putExtra(Constants.Extra.IMAGE_POSITION, position);
 		startActivity(intent);
 	}
+
+	// Atlas
+	protected void onPressEventHandler(View view, int position) {
+        Log.d(TAG, "onPressEventHandler mode:" + mode.name());
+
+        if (mode == Modes.DISPLAY) {
+			startImagePagerActivity(position);
+		} else if (mode == Modes.EDIT) {
+			revertTickSelect(view);
+		}
+	}
+
+	protected int revertTickSelect(View view) {
+		ImageView icon = (ImageView) view.findViewById(R.id.tick);
+        ImageView image = (ImageView) view.findViewById(R.id.image);
+		if (View.VISIBLE == icon.getVisibility()) {
+			icon.setVisibility(View.INVISIBLE);
+		} else {
+			icon.setVisibility(View.VISIBLE);
+            image.setAlpha(alpha_select_image);
+			selectViewList.add(view);
+			Log.d(TAG, "revertTickSelect imageView=" + view + " selectViewList.size=" + selectViewList.size());
+		}
+		return icon.getVisibility();
+	}
+
+	protected void resetTickView() {
+		Log.d(TAG, "resetTickView selectViewList.size=" + selectViewList.size());
+
+		for (int i = 0; i < selectViewList.size(); i++) {
+            View view = selectViewList.get(i);
+            ImageView icon = (ImageView) view.findViewById(R.id.tick);
+            ImageView image = (ImageView) view.findViewById(R.id.image);
+
+			icon.setVisibility(View.INVISIBLE);
+            image.setAlpha(255);
+			Log.d(TAG, "resetTickView selectViewList.get(i)=" + selectViewList.get(i));
+		}
+
+		selectViewList.clear();
+	}
+
+	protected void onLongPressEventHandler(View view, int position) {
+        Log.d(TAG, "onLongPressEventHandler mode:" + mode.name());
+
+		if (selectViewList == null) selectViewList = new ArrayList<View>();
+
+        revertMode();
+        if (Modes.EDIT == mode) {
+            revertTickSelect(view);
+        } else if (Modes.DISPLAY == mode) {
+            resetTickView();
+        }
+
+	}
+
+	protected void revertMode() {
+        mode = (mode == Modes.DISPLAY) ? Modes.EDIT: Modes.DISPLAY;
+        Log.d(TAG, "revertMode to mode=" + mode.name());
+    }
 
 	private void applyScrollListener() {
 		listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling));

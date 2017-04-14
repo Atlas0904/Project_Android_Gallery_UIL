@@ -184,8 +184,10 @@ public class OldRoundedBitmapDisplayer implements BitmapDisplayer {
 		final RectF destRectF = new RectF(destRect);
 
 		paint.setAntiAlias(true);
-		canvas.drawARGB(0, 0, 0, 0);
-		paint.setColor(0xFF000000);
+//		canvas.drawARGB(0, 0, 0, 0);
+		canvas.drawARGB(0, 255, 255, 255);
+//		paint.setColor(0xFF000000);
+		paint.setColor(0xFFFFFFFF);
 		canvas.drawRoundRect(destRectF, roundPixels, roundPixels, paint);
 
 		paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));

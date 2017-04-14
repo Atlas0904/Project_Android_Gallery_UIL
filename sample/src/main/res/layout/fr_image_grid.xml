@@ -4,8 +4,8 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:gravity="center"
-	android:horizontalSpacing="4dip"
+	android:horizontalSpacing="1dip"
 	android:numColumns="3"
 	android:stretchMode="columnWidth"
-	android:verticalSpacing="4dip"
-	android:padding="4dip" />
+	android:verticalSpacing="1dip"
+	android:padding="1dip" />
