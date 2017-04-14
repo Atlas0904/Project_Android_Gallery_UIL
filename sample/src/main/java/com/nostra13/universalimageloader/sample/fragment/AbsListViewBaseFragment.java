@@ -22,7 +22,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
@@ -31,6 +33,7 @@ import com.nostra13.universalimageloader.sample.R;
 import com.nostra13.universalimageloader.sample.activity.SimpleImageActivity;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
@@ -49,12 +52,12 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
     }
 
 	protected AbsListView listView;
+    protected BaseAdapter imageAdapter;
 
 	protected boolean pauseOnScroll = false;
 	protected boolean pauseOnFling = true;
 
 	protected Modes mode = Modes.DISPLAY;
-	protected ArrayList<View> selectViewList;
 
     public static boolean[] selected_image = new boolean[Constants.IMAGES.length];
 
@@ -101,54 +104,70 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 	}
 
 	// Atlas
-	protected void onPressEventHandler(View view, int position) {
+	protected void onPressEventHandler(View view, int pos) {
         Log.d(TAG, "onPressEventHandler mode:" + mode.name());
 
         if (mode == Modes.DISPLAY) {
-			startImagePagerActivity(position);
+			startImagePagerActivity(pos);
 		} else if (mode == Modes.EDIT) {
-			revertTickSelect(view);
+			revertTickSelect(view, pos);
 		}
 	}
 
-	protected int revertTickSelect(View view) {
-		ImageView icon = (ImageView) view.findViewById(R.id.tick);
+	protected void revertTickSelect(View view, int pos) {
+        Log.d(TAG, "selected_image pos[" + pos + "]=" + selected_image[pos]);
+
+        if (selected_image[pos]) {
+            unselectAction(view, pos);
+        } else if (!selected_image[pos]) {
+            selectAction(view, pos);
+        }
+	}
+
+	protected void selectAction(View view, int pos) {
+        if (!selected_image[pos]) {
+            selected_image[pos] = true;
+            Log.d(TAG, "selectAction pos:"+ pos + "=> " + selected_image[pos]);
+            setSelectView(view);
+        }
+    }
+
+    protected void unselectAction(View view, int pos) {
+        if (selected_image[pos]) {
+
+            selected_image[pos] = false;
+            unsetSelectView(view);
+            Log.d(TAG, "selectAction pos:"+ pos + "=> " + selected_image[pos]);
+        }
+    }
+
+    public void setSelectView(View view) {
+        ImageView icon = (ImageView) view.findViewById(R.id.tick);
         ImageView image = (ImageView) view.findViewById(R.id.image);
-		if (View.VISIBLE == icon.getVisibility()) {
-			icon.setVisibility(View.INVISIBLE);
-		} else {
-			icon.setVisibility(View.VISIBLE);
-            image.setAlpha(alpha_select_image);
-			selectViewList.add(view);
-			Log.d(TAG, "revertTickSelect imageView=" + view + " selectViewList.size=" + selectViewList.size());
-		}
-		return icon.getVisibility();
+        icon.setVisibility(View.VISIBLE);
+        image.setAlpha(alpha_select_image);
+    }
+
+    protected void unsetSelectView(View view) {
+        ImageView icon = (ImageView) view.findViewById(R.id.tick);
+        ImageView image = (ImageView) view.findViewById(R.id.image);
+        icon.setVisibility(View.INVISIBLE);
+        image.setAlpha(255);
+    }
+
+    protected void resetTickView() {
+
+        for (int i = 0; i < selected_image.length; i++) {
+            selected_image[i] = false;
+        }
 	}
 
-	protected void resetTickView() {
-		Log.d(TAG, "resetTickView selectViewList.size=" + selectViewList.size());
-
-		for (int i = 0; i < selectViewList.size(); i++) {
-            View view = selectViewList.get(i);
-            ImageView icon = (ImageView) view.findViewById(R.id.tick);
-            ImageView image = (ImageView) view.findViewById(R.id.image);
-
-			icon.setVisibility(View.INVISIBLE);
-            image.setAlpha(255);
-			Log.d(TAG, "resetTickView selectViewList.get(i)=" + selectViewList.get(i));
-		}
-
-		selectViewList.clear();
-	}
-
-	protected void onLongPressEventHandler(View view, int position) {
+	protected void onLongPressEventHandler(View view, int pos) {
         Log.d(TAG, "onLongPressEventHandler mode:" + mode.name());
-
-		if (selectViewList == null) selectViewList = new ArrayList<View>();
 
         revertMode();
         if (Modes.EDIT == mode) {
-            revertTickSelect(view);
+            revertTickSelect(view, pos);
         } else if (Modes.DISPLAY == mode) {
             resetTickView();
         }
@@ -163,4 +182,19 @@ public abstract class AbsListViewBaseFragment extends BaseFragment {
 	private void applyScrollListener() {
 		listView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), pauseOnScroll, pauseOnFling));
 	}
+
+    protected static int random() {
+        int max = 255;
+        int min = 0;
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
+    }
+
+    protected void updateUI(View view, int position) {
+        if (selected_image[position]) {
+            setSelectView(view);
+        } else {
+            unsetSelectView(view);
+        }
+    }
 }

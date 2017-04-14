@@ -47,13 +47,15 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 	private static final String TAG =  ImageAdapter.class.getSimpleName();
 	public static final int INDEX = 1;
 
-
-
-	@Override
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fr_image_grid, container, false);
 		listView = (GridView) rootView.findViewById(R.id.grid);
-		((GridView) listView).setAdapter(new ImageAdapter(getActivity()));
+
+        imageAdapter = new ImageAdapter(getActivity());
+        ((GridView) listView).setAdapter(imageAdapter);
+
+
 		listView.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -72,9 +74,14 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 		return rootView;
 	}
 
-	private static class ImageAdapter extends BaseAdapter {
+	void refresh() {
+        Log.d(TAG, "refresh()");
+        imageAdapter.notifyDataSetChanged();
+    }
 
-		private static final String[] IMAGE_URLS = Constants.IMAGES;
+	private class ImageAdapter extends BaseAdapter {
+
+		private final String[] IMAGE_URLS = Constants.IMAGES;
 
 		private LayoutInflater inflater;
 
@@ -111,8 +118,13 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+            Log.d(TAG, "getView position=" + position + " view=" + convertView +  " parent=" + parent);
+            int firstPosition = ((GridView) listView).getFirstVisiblePosition();
+            int lastPosition = ((GridView) listView).getLastVisiblePosition();
+
 			final ViewHolder holder;
 			View view = convertView;
+
 			if (view == null) {
 				view = inflater.inflate(R.layout.item_grid_image, parent, false);
 				holder = new ViewHolder();
@@ -120,10 +132,16 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 				holder.imageView = (ImageView) view.findViewById(R.id.image);
 				holder.icon = (ImageView) view.findViewById(R.id.tick);
 				holder.progressBar = (ProgressBar) view.findViewById(R.id.progress);
+
 				view.setTag(holder);
 			} else {
 				holder = (ViewHolder) view.getTag();
 			}
+
+            Log.d(TAG, "getView selected_image[position]" + selected_image[position]);
+
+
+            updateUI(view, position);
 
 			ImageLoader.getInstance()
 					.displayImage(IMAGE_URLS[position], holder.imageView, options, new SimpleImageLoadingListener() {
@@ -155,12 +173,20 @@ public class ImageGridFragment extends AbsListViewBaseFragment {
 
 	}
 
-	private static int random() {
-		int max = 255;
-		int min = 0;
-		Random random = new Random();
-		return random.nextInt(max - min + 1) + min;
-	}
+    private View getViewByPosition(View view, int position) {
+        int firstPosition = ((GridView) listView).getFirstVisiblePosition();
+        int lastPosition = ((GridView) listView).getLastVisiblePosition();
+
+        Log.d(TAG, "getViewByPosition position= " + position + " first=" + firstPosition + " last=" + lastPosition);
+
+        if ((position < firstPosition) || (position > lastPosition))
+            return null;
+
+        return listView.getChildAt(position - firstPosition);
+    }
+
+
+
 
 	static class ViewHolder {
 		ImageView imageView;
