@@ -7,13 +7,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <uses-sdk tools:overrideLibrary="com.nostra13.universalimageloader"/>
+    <uses-sdk tools:overrideLibrary="it.sephiroth.android.library.imagezoom, com.nostra13.universalimageloader, com.davemorrissey.labs.subscaleview" />
+
 
     <application
         android:theme="@android:style/Theme.Holo.Light"
         android:name=".UILApplication"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        tools:replace="android:allowBackup"
 		android:allowBackup="false">
         <activity
             android:name=".activity.HomeActivity"
